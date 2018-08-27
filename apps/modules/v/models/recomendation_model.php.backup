@@ -1,0 +1,57 @@
+<?php
+
+class Recomendation_model extends CI_Model{
+
+    public function lstRecomendation()
+    {
+        if($this->newsession->userdata('isLogin'))
+		{
+            $table = $this->newtable;
+			$query = "SELECT A.RECOM_ID, REPLACE(REPLACE(D.BBPOM_NAME,'BALAI BESAR POM DI', ''),'BALAI POM DI','') AS 'BBPOM', C.TRADER_NAME AS 'Nama Sarana',
+					  C.TRADER_ADDRESS_1 + '<div>' + C.TRADER_ADDRESS_2 +  '</div>' AS 'Alamat',
+					  CONVERT(VARCHAR(10), B.INSPECTION_DATE_START, 120) + '<div> Sampai Dengan </div>' + CONVERT(VARCHAR(10), B.INSPECTION_DATE_END, 120) AS 'Tanggal Periksa',
+                      B.INSPECTION_RESULT AS 'Hasil Balai', B.INSPECTION_BPOM_RESULT AS 'Hasil Pusat'
+                      FROM TX_RECOM A 
+					  LEFT JOIN TM_INSPECTION B ON A.INSPECTION_ID = B.INSPECTION_ID
+                      LEFT JOIN TM_TRADER C ON B.TRADER_ID = C.TRADER_ID
+                      LEFT JOIN TR_BBPOM D ON B.BBPOM_ID = D.BBPOM_ID";
+			$table->columns(array("A.RECOM_ID", "REPLACE(REPLACE(D.BBPOM_NAME,'BALAI BESAR POM DI', ''),'BALAI POM DI','')",
+								  "C.TRADER_ADDRESS_1 + '<div>' + C.TRADER_ADDRESS_2 +  '</div>'",
+								  "CONVERT(VARCHAR(10), B.INSPECTION_DATE_START, 120) + '<div> Sampai Dengan </div>' + CONVERT(VARCHAR(10), B.INSPECTION_DATE_END, 120)",
+								  "B.INSPECTION_RESULT", "B.INSPECTION_BPOM_RESULT"));
+			$this->newtable->width(array('BBPOM' => 100,
+										 'Nama Sarana' => 250,
+										 'Alamat' => 300,
+										 'Tanggal Periksa' => 110,
+										 'Hasil Balai' => 50,
+										 'Hasil Pusat' => 50));
+			$this->newtable->search(array(array("REPLACE(REPLACE(C.BBPOM_NAME,'BALAI BESAR POM DI', ''),'BALAI POM DI','')", 'Balai Besar / Balai POM'),
+										  array("C.TRADER_NAME", 'Nama Sarana'),
+										  array("B.INSPECTION_RESULT", 'Hasil Balai'),
+										  array("B.INSPECTION_BPOM_RESULT", 'Hasil Pusat')
+										  ));
+			$table->keys(array("RECOM_ID"));
+			$table->hiddens(array("RECOM_ID")); 
+			$table->menu(array(
+								 'Preview' => array('GET', site_url().'recomendation/preview', '1', 'mdi-action-open-in-new', 'blue darken-1')
+                              )
+                        );
+			$table->cidb($this->db);
+			$table->ciuri($this->uri->segment_array());
+			$table->action(site_url('v/recomendation'));
+			//$table->detail(site_url().'get/history');
+			$table->orderby(1);
+			$table->sortby("ASC");
+			$table->show_search(TRUE);
+			$table->show_chk(TRUE);
+			$table->single(FALSE);
+			$table->expandrow(TRUE);
+			$table->postmethod(TRUE);
+			$table->tbtarget("listRecomendation");
+			$table->judul('Data Rekomendasi Pemeriksaan Sarana');
+			$arrdata = array('table' => $table->generate($query));
+			if($this->input->post("data-post")) return $table->generate($query);
+			else return $arrdata;
+        }
+    }
+}

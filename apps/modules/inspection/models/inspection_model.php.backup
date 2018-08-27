@@ -1,0 +1,80 @@
+<?php
+
+class Inspection_model extends CI_Model{
+
+    public function getInspection($id)
+    {
+        if($this->newsession->userdata('isLogin'))
+		{
+            $arrInspection['action'] = site_url('post/set_recom_inspection');
+            $TmInspection = "SELECT A.INSPECTION_ID, A.TRADER_TYPE_ID, CONVERT(VARCHAR(10), A.INSPECTION_DATE_START, 120) AS INSPECTION_DATE_START,
+                             CONVERT(VARCHAR(10), A.INSPECTION_DATE_END, 120) AS INSPECTION_DATE_END,
+                             A.INSPECTION_RESULT, A.INSPECTION_BPOM_RESULT,
+                             B.TRADER_NAME, B.TRADER_INDUSTRY, B.TRADER_OWNER, B.TRADER_NPWP,
+                             B.TRADER_ADDRESS_1, B.TRADER_ADDRESS_2, B.TRADER_PHONE, B.TRADER_FAX, B.TRADER_PERMIT,
+                             C.BBPOM_NAME, C.BBPOM_ADDRESS
+                             FROM TM_INSPECTION A
+                             LEFT JOIN TM_TRADER B ON A.TRADER_ID = B.TRADER_ID
+                             LEFT JOIN TR_BBPOM C ON A.BBPOM_ID = C.BBPOM_ID
+                             WHERE A.INSPECTION_ID = " . $id;
+            $dTmInspection = $this->main->get_result($TmInspection);
+            if($dTmInspection)
+            {
+                foreach($TmInspection->result_array() as $row)
+                {
+                    $arrInspection['obj']         = $row;
+                }
+            }
+
+            $arrInspection['selectGroupAgency']   = $this->main->set_combobox("SELECT GA_ID, GA_NAME FROM TR_GA WHERE GA_ID <> 1", "GA_ID", "GA_NAME", TRUE);
+            $arrInspection['selectGroupOffice']   = array('' => '');                             
+            return $arrInspection;
+        }
+    }
+
+    public function storeRecomInspection()
+    {
+        if($this->newsession->userdata('isLogin'))
+		{
+            $respon = FALSE;
+            $TxRecom = $this->main->post_to_query($_POST['objRecom']);
+            $TxRecom['RECOM_STATUS']            = '1';
+            $TxRecom['RECOM_ID']                = (int)$this->main->get_uraian("SELECT MAX(RECOM_ID) AS SEQ FROM TX_RECOM", "SEQ") + 1;
+            $TxRecom['USER_ID']                 = $this->newsession->userdata('USER_ID');
+            $TxRecom['RECOM_DATE_CREATED']      = 'GETDATE()';
+            $this->db->insert('TX_RECOM', $TxRecom);
+            if($this->db->affected_rows() > 0)
+            {
+                $TlRecom = array(
+                    'RECOM_ID'                  => $TxRecom['RECOM_ID'],
+                    'RECOM_LOG_DATE_CREATED'    => 'GETDATE()',
+                    'RECOM_LOG_STATUS'          => '1',
+                    'RECOM_LOG_ACTION'          => 'Insert Rekomendasi',
+                    'RECOM_LOG_NOTE'            => 'Catatan Rekomendasi',
+                    'RECOM_LOG_HISTORY'         => 'Log History',
+                    'USER_ID'                   => $this->newsession->userdata('USER_ID')
+                );
+                $this->db->insert('TL_RECOM', $TlRecom);
+                if($this->db->affected_rows() > 0)
+                {
+                    $respon = TRUE;
+                }
+                
+            }
+            if($respon)
+            {
+                return array(
+                    'error' => '',
+                    'message' => 'Data rekomendasi berhasil di kirim',
+                    'returnurl' => site_url('v/inspection')
+                );
+            }
+            else
+            {
+                return array(
+                    'error' => 'Data rekomendasi gagal dikirim.'
+                );
+            }
+        }
+    }
+}

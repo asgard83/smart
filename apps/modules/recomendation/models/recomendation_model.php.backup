@@ -1,0 +1,81 @@
+<?php
+
+class Recomendation_model extends CI_Model{
+
+    public function getRecomendation($id)
+    {
+        if($this->newsession->userdata('isLogin'))
+		{
+            $arrRecomendation['action'] = site_url('post/set_recom_follow_up');
+            $TxRecomdation = "SELECT A.RECOM_ID, B.INSPECTION_ID, B.TRADER_TYPE_ID, CONVERT(VARCHAR(10), B.INSPECTION_DATE_START, 120) AS INSPECTION_DATE_START,
+                             CONVERT(VARCHAR(10), B.INSPECTION_DATE_END, 120) AS INSPECTION_DATE_END,
+                             B.INSPECTION_RESULT, B.INSPECTION_BPOM_RESULT,
+                             C.TRADER_NAME, C.TRADER_INDUSTRY, C.TRADER_OWNER, C.TRADER_NPWP,
+                             C.TRADER_ADDRESS_1, C.TRADER_ADDRESS_2, C.TRADER_PHONE, C.TRADER_FAX, C.TRADER_PERMIT,
+                             D.BBPOM_NAME, D.BBPOM_ADDRESS
+                             FROM TX_RECOM A 
+                             LEFT JOIN TM_INSPECTION B ON A.INSPECTION_ID = B.INSPECTION_ID
+                             LEFT JOIN TM_TRADER C ON B.TRADER_ID = C.TRADER_ID
+                             LEFT JOIN TR_BBPOM D ON B.BBPOM_ID = D.BBPOM_ID
+                             WHERE A.RECOM_ID = " . $id;
+            $dTxRecomdation = $this->main->get_result($TxRecomdation);
+            if($dTxRecomdation)
+            {
+                foreach($TxRecomdation->result_array() as $row)
+                {
+                    $arrRecomendation['obj']         = $row;
+                }
+            }
+            return $arrRecomendation;
+        }
+    }
+
+    public function storeRecomRecomendation()
+    {
+        if($this->newsession->userdata('isLogin'))
+		{
+            $respon = FALSE;
+            $TxRecom = $this->main->post_to_query($_POST['objRecom']);
+            $iRecomId = $TxRecom['RECOM_ID'];
+            $iInspectionId = $TxRecom['INSPECTION_ID'];
+            unset($TxRecom['RECOM_ID']);
+            unset($TxRecom['INSPECTION_ID']);
+            $TxRecom['RECOM_USER_FOLLOWUP']     = $this->newsession->userdata('USER_ID');
+            $TxRecom['RECOM_DATE_FOLLOWUP']     = 'GETDATE()';
+            $this->db->where(array('RECOM_ID' => $iRecomId, 'INSPECTION_ID' => $iInspectionId));
+            $this->db->updatet('TX_RECOM', $TxRecom);
+            if($this->db->affected_rows() > 0)
+            {
+                $TlRecom = array(
+                    'RECOM_ID'                  => $iRecomId,
+                    'RECOM_LOG_DATE_CREATED'    => 'GETDATE()',
+                    'RECOM_LOG_STATUS'          => '1',
+                    'RECOM_LOG_ACTION'          => 'Insert Rekomendasi',
+                    'RECOM_LOG_NOTE'            => 'Catatan Rekomendasi',
+                    'RECOM_LOG_HISTORY'         => 'Log History',
+                    'USER_ID'                   => $this->newsession->userdata('USER_ID')
+                );
+                $this->db->insert('TL_RECOM', $TlRecom);
+                if($this->db->affected_rows() > 0)
+                {
+                    $respon = TRUE;
+                }
+                
+            }
+            if($respon)
+            {
+                return array(
+                    'error' => '',
+                    'message' => 'Data rekomendasi berhasil di kirim',
+                    'returnurl' => site_url('v/recomendation')
+                );
+            }
+            else
+            {
+                return array(
+                    'error' => 'Data rekomendasi gagal dikirim.'
+                );
+            }
+        }
+    }
+}
