@@ -48,10 +48,10 @@
 $active_group = 'default';
 $active_record = TRUE;
 		
-$db['default']['hostname'] = "192.168.30.88\KEPEGAWAIAN";
-$db['default']['username'] = "sa";
-$db['default']['password'] = "it@bpom2012!@#";
-$db['default']['database'] = 'smart';
+$db['default']['hostname'] = "hostname";
+$db['default']['username'] = "username";
+$db['default']['password'] = "password";
+$db['default']['database'] = 'database';
 $db['default']['dbdriver'] = 'mssql';
 $db['default']['dbprefix'] = '';
 $db['default']['pconnect'] = TRUE;
@@ -64,10 +64,10 @@ $db['default']['swap_pre'] = '';
 $db['default']['autoinit'] = TRUE;
 $db['default']['stricton'] = FALSE;
 
-$db['halo']['hostname'] = "172.16.1.69";
-$db['halo']['username'] = "bpomdb";
-$db['halo']['password'] = "bpom123";
-$db['halo']['database'] = 'halo_bpom';
+$db['halo']['hostname'] = "host-halo";
+$db['halo']['username'] = "user-halo";
+$db['halo']['password'] = "password-halo";
+$db['halo']['database'] = 'database-halo';
 $db['halo']['dbdriver'] = 'mysqli';
 $db['halo']['dbprefix'] = '';
 $db['halo']['pconnect'] = TRUE;
@@ -80,10 +80,10 @@ $db['halo']['swap_pre'] = '';
 $db['halo']['autoinit'] = FALSE;
 $db['halo']['stricton'] = FALSE;
 
-$db['sipt']['hostname'] = "192.168.30.88\KEPEGAWAIAN";
-$db['sipt']['username'] = "sa";
-$db['sipt']['password'] = "it@bpom2012!@#";
-$db['sipt']['database'] = 'sipt';
+$db['sipt']['hostname'] = "host-sipt";
+$db['sipt']['username'] = "user-sipt";
+$db['sipt']['password'] = "password-sipt";
+$db['sipt']['database'] = 'database-sipt';
 $db['sipt']['dbdriver'] = 'mssql';
 $db['sipt']['dbprefix'] = '';
 $db['sipt']['pconnect'] = TRUE;
